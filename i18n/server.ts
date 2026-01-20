@@ -24,7 +24,15 @@ export const getLocaleOnServer = async (): Promise<Locale> => {
     languages = new Negotiator({ headers: negotiatorHeaders }).languages()
   }
 
-  // match locale
-  const matchedLocale = match(languages, locales, i18n.defaultLocale) as Locale
-  return matchedLocale
+  // Filter out invalid locales like '*'
+  languages = languages.filter(lang => lang !== '*' && /^[a-z]{2}(-[A-Z]{2})?$/.test(lang))
+
+  // match locale or fallback to default
+  try {
+    const matchedLocale = match(languages, locales, i18n.defaultLocale) as Locale
+    return matchedLocale
+  }
+  catch (error) {
+    return i18n.defaultLocale as Locale
+  }
 }
